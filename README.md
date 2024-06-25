@@ -16,7 +16,7 @@ This application parses and processes cryptocurrency trade data from a CSV file 
 ## Deployment
 
 - MongoDB Atlas for database
-- Heroku for backend
+- render for backend
 
 ## Setup
 
