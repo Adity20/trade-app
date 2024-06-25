@@ -1,13 +1,25 @@
-const Trade = require('../models/Trade');
+const multer = require('multer');
 const csv = require('csv-parser');
 const fs = require('fs');
+const Trade = require('../models/Trade');
+
+// Multer configuration
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/'); // Destination folder for uploaded files
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname);
+    }
+});
+const upload = multer({ storage: storage });
 
 exports.uploadCSV = (req, res) => {
-    const results = [];
-
     if (!req.file) {
         return res.status(400).send('No file uploaded');
     }
+
+    const results = [];
 
     fs.createReadStream(req.file.path)
         .pipe(csv())
@@ -48,23 +60,30 @@ exports.uploadCSV = (req, res) => {
 };
 
 
+
 exports.getBalance = async (req, res) => {
     const { timestamp } = req.body;
 
     try {
+        if (!timestamp) {
+            return res.status(400).json({ error: 'Timestamp is required' });
+        }
+
         const date = new Date(timestamp);
+
+        if (isNaN(date.getTime())) {
+            return res.status(400).json({ error: 'Invalid timestamp format' });
+        }
 
         const trades = await Trade.find({ utc_time: { $lte: date } });
 
         const balance = trades.reduce((acc, trade) => {
-            if (!acc[trade.base_coin]) {
-                acc[trade.base_coin] = 0;
-            }
             const amount = trade.operation.toLowerCase() === 'buy' ? trade.amount : -trade.amount;
-            acc[trade.base_coin] += amount;
+            acc[trade.base_coin] = (acc[trade.base_coin] || 0) + amount;
             return acc;
         }, {});
 
+        // Remove zero balances
         Object.keys(balance).forEach(key => {
             if (balance[key] === 0) {
                 delete balance[key];
