@@ -16,7 +16,7 @@ This application parses and processes cryptocurrency trade data from a CSV file 
 ## Deployment
 
 - MongoDB Atlas for database
-- Heroku for backend
+- render for backend
 
 ## Setup
 
@@ -33,7 +33,7 @@ This application parses and processes cryptocurrency trade data from a CSV file 
 
 3. Create a `.env` file and add your MongoDB URI:
     ```
-    MONGODB_URI=<your_mongodb_connection_string>
+    MONGODB=<your_mongodb_connection_string>
     PORT=3000
     ```
 
